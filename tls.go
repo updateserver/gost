@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ginuerzh/gost/utils"
 	"github.com/go-log/log"
 
 	smux "gopkg.in/xtaci/smux.v1"
@@ -73,7 +74,7 @@ func (tr *mtlsTransporter) Dial(addr string, options ...DialOption) (conn net.Co
 		}
 
 		if opts.Chain == nil {
-			conn, err = net.DialTimeout("tcp", addr, timeout)
+			conn, err = utils.DialTimeout("tcp", addr, timeout)
 		} else {
 			conn, err = opts.Chain.Dial(addr)
 		}

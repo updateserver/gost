@@ -5,6 +5,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/ginuerzh/gost/utils"
 	"github.com/go-log/log"
 )
 
@@ -142,7 +143,7 @@ func (c *Chain) dialWithOptions(addr string, options *ChainOptions) (net.Conn, e
 	}
 
 	if route.IsEmpty() {
-		return net.DialTimeout("tcp", ipAddr, timeout)
+		return utils.DialTimeout("tcp", ipAddr, timeout)
 	}
 
 	conn, err := route.getConn()

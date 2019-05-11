@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/ginuerzh/gost/utils"
 	"github.com/pkg/errors"
 	"golang.org/x/net/ipv4"
 )
@@ -937,9 +938,9 @@ func DialWithOptions(raddr string, block BlockCrypt, dataShards, parityShards in
 		return nil, errors.Wrap(err, "net.ResolveUDPAddr")
 	}
 
-	udpconn, err := net.DialUDP("udp", nil, udpaddr)
+	udpconn, err := utils.DialUDP("udp", nil, udpaddr)
 	if err != nil {
-		return nil, errors.Wrap(err, "net.DialUDP")
+		return nil, errors.Wrap(err, "utils.DialUDP")
 	}
 
 	return NewConn(raddr, block, dataShards, parityShards, &connectedUDPConn{udpconn})

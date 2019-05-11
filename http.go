@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ginuerzh/gost/utils"
 	"github.com/go-log/log"
 )
 
@@ -317,7 +318,7 @@ func (h *httpHandler) authenticate(conn net.Conn, req *http.Request, resp *http.
 				resp = r
 			}
 		case "host":
-			cc, err := net.Dial("tcp", ss[1])
+			cc, err := utils.Dial("tcp", ss[1])
 			if err == nil {
 				defer cc.Close()
 

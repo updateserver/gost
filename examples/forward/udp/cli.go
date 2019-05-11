@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"time"
+
+	"github.com/ginuerzh/gost/utils"
 )
 
 var (
@@ -32,7 +34,7 @@ func udpEchoLoop() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	conn, err := net.DialUDP("udp", nil, addr)
+	conn, err := utils.DialUDP("udp", nil, addr)
 	if err != nil {
 		log.Fatal(err)
 	}

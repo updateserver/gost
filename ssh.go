@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ginuerzh/gost/utils"
 	"github.com/go-log/log"
 	"golang.org/x/crypto/ssh"
 )
@@ -149,7 +150,7 @@ func (tr *sshForwardTransporter) Dial(addr string, options ...DialOption) (conn 
 	session, ok := tr.sessions[addr]
 	if !ok || session.Closed() {
 		if opts.Chain == nil {
-			conn, err = net.DialTimeout("tcp", addr, timeout)
+			conn, err = utils.DialTimeout("tcp", addr, timeout)
 		} else {
 			conn, err = opts.Chain.Dial(addr)
 		}
@@ -258,7 +259,7 @@ func (tr *sshTunnelTransporter) Dial(addr string, options ...DialOption) (conn n
 	session, ok := tr.sessions[addr]
 	if !ok || session.Closed() {
 		if opts.Chain == nil {
-			conn, err = net.DialTimeout("tcp", addr, timeout)
+			conn, err = utils.DialTimeout("tcp", addr, timeout)
 		} else {
 			conn, err = opts.Chain.Dial(addr)
 		}

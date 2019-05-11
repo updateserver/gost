@@ -14,6 +14,7 @@ import (
 
 	"github.com/ginuerzh/gosocks4"
 	"github.com/ginuerzh/gosocks5"
+	"github.com/ginuerzh/gost/utils"
 	"github.com/go-log/log"
 	smux "gopkg.in/xtaci/smux.v1"
 )
@@ -381,7 +382,7 @@ func (tr *socks5MuxBindTransporter) Dial(addr string, options ...DialOption) (co
 	}
 	if !ok {
 		if opts.Chain == nil {
-			conn, err = net.DialTimeout("tcp", addr, timeout)
+			conn, err = utils.DialTimeout("tcp", addr, timeout)
 		} else {
 			conn, err = opts.Chain.Dial(addr)
 		}
@@ -557,7 +558,7 @@ func (c *socks5UDPConnector) Connect(conn net.Conn, addr string, options ...Conn
 	}
 	log.Logf("[socks5] udp associate on %s OK", baddr)
 
-	uc, err := net.DialUDP("udp", nil, baddr)
+	uc, err := utils.DialUDP("udp", nil, baddr)
 	if err != nil {
 		return nil, err
 	}

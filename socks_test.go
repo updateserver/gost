@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"testing"
 	"time"
+
+	"github.com/ginuerzh/gost/utils"
 )
 
 var socks5ProxyTests = []struct {
@@ -375,7 +377,7 @@ func socks5BindRoundtrip(t *testing.T, targetURL string, data []byte) (err error
 		return
 	}
 
-	cc, err := net.Dial("tcp", conn.LocalAddr().String())
+	cc, err := utils.Dial("tcp", conn.LocalAddr().String())
 	if err != nil {
 		return
 	}
@@ -389,7 +391,7 @@ func socks5BindRoundtrip(t *testing.T, targetURL string, data []byte) (err error
 	if err != nil {
 		return
 	}
-	hc, err := net.Dial("tcp", u.Host)
+	hc, err := utils.Dial("tcp", u.Host)
 	if err != nil {
 		return
 	}
@@ -455,7 +457,7 @@ func muxBindRoundtrip(client *Client, server *Server, bindAddr, targetURL string
 	}
 	defer conn.Close()
 
-	cc, err := net.Dial("tcp", bindAddr)
+	cc, err := utils.Dial("tcp", bindAddr)
 	if err != nil {
 		return
 	}
@@ -470,7 +472,7 @@ func muxBindRoundtrip(client *Client, server *Server, bindAddr, targetURL string
 	if err != nil {
 		return
 	}
-	hc, err := net.Dial("tcp", u.Host)
+	hc, err := utils.Dial("tcp", u.Host)
 	if err != nil {
 		return
 	}

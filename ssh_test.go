@@ -4,10 +4,11 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"fmt"
-	"net"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/ginuerzh/gost/utils"
 )
 
 func sshDirectForwardRoundtrip(targetURL string, data []byte) error {
@@ -143,7 +144,7 @@ func sshRemoteForwardRoundtrip(t *testing.T, targetURL string, data []byte) (err
 		}
 	}()
 
-	c, err := net.Dial("tcp", conn.LocalAddr().String())
+	c, err := utils.Dial("tcp", conn.LocalAddr().String())
 	if err != nil {
 		return
 	}
@@ -154,7 +155,7 @@ func sshRemoteForwardRoundtrip(t *testing.T, targetURL string, data []byte) (err
 		return
 	}
 
-	cc, err := net.Dial("tcp", u.Host)
+	cc, err := utils.Dial("tcp", u.Host)
 	if err != nil {
 		return
 	}

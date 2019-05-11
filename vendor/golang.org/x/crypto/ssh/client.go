@@ -12,6 +12,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	"github.com/ginuerzh/gost/utils"
 )
 
 // Client implements a traditional SSH client that supports shells,
@@ -170,7 +172,7 @@ func (c *Client) handleChannelOpens(in <-chan NewChannel) {
 // to incoming channels and requests, use net.Dial with NewClientConn
 // instead.
 func Dial(network, addr string, config *ClientConfig) (*Client, error) {
-	conn, err := net.DialTimeout(network, addr, config.Timeout)
+	conn, err := utils.DialTimeout(network, addr, config.Timeout)
 	if err != nil {
 		return nil, err
 	}

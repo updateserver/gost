@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	"github.com/ginuerzh/gosocks5"
+	"github.com/ginuerzh/gost/utils"
 	"github.com/go-log/log"
 	smux "gopkg.in/xtaci/smux.v1"
 )
@@ -195,7 +196,7 @@ func (h *udpDirectForwardHandler) Handle(conn net.Conn) {
 			log.Logf("[udp] %s - %s : %s", conn.LocalAddr(), node.Addr, err)
 			return
 		}
-		cc, err = net.DialUDP("udp", nil, raddr)
+		cc, err = utils.DialUDP("udp", nil, raddr)
 		if err != nil {
 			node.MarkDead()
 			log.Logf("[udp] %s - %s : %s", conn.LocalAddr(), node.Addr, err)
@@ -285,7 +286,7 @@ func (h *tcpRemoteForwardHandler) Handle(conn net.Conn) {
 			log.Logf("[rtcp] %s - %s : %s", conn.LocalAddr(), h.raddr, err)
 			return
 		}
-		cc, err = net.DialTimeout("tcp", node.Addr, h.options.Timeout)
+		cc, err = utils.DialTimeout("tcp", node.Addr, h.options.Timeout)
 		if err != nil {
 			log.Logf("[rtcp] %s -> %s : %s", conn.LocalAddr(), node.Addr, err)
 			node.MarkDead()
@@ -370,7 +371,7 @@ func (h *udpRemoteForwardHandler) Handle(conn net.Conn) {
 		log.Logf("[rudp] %s - %s : %s", conn.RemoteAddr(), node.Addr, err)
 		return
 	}
-	cc, err := net.DialUDP("udp", nil, raddr)
+	cc, err := utils.DialUDP("udp", nil, raddr)
 	if err != nil {
 		node.MarkDead()
 		log.Logf("[rudp] %s - %s : %s", conn.RemoteAddr(), node.Addr, err)

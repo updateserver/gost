@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ginuerzh/gosocks5"
+	"github.com/ginuerzh/gost/utils"
 )
 
 // Client is a proxy client.
@@ -83,7 +84,7 @@ func (tr *tcpTransporter) Dial(addr string, options ...DialOption) (net.Conn, er
 		timeout = DialTimeout
 	}
 	if opts.Chain == nil {
-		return net.DialTimeout("tcp", addr, timeout)
+		return utils.DialTimeout("tcp", addr, timeout)
 	}
 	return opts.Chain.Dial(addr)
 }
@@ -115,7 +116,7 @@ func (tr *udpTransporter) Dial(addr string, options ...DialOption) (net.Conn, er
 		timeout = DialTimeout
 	}
 
-	return net.DialTimeout("udp", addr, timeout)
+	return utils.DialTimeout("udp", addr, timeout)
 }
 
 func (tr *udpTransporter) Handshake(conn net.Conn, options ...HandshakeOption) (net.Conn, error) {

@@ -13,10 +13,11 @@ import (
 
 	"sync"
 
+	"github.com/ginuerzh/gost/utils"
 	"github.com/go-log/log"
 	"github.com/klauspost/compress/snappy"
-	"gopkg.in/xtaci/kcp-go.v4"
-	"gopkg.in/xtaci/smux.v1"
+	kcp "gopkg.in/xtaci/kcp-go.v4"
+	smux "gopkg.in/xtaci/smux.v1"
 )
 
 var (
@@ -133,7 +134,7 @@ func (tr *kcpTransporter) Dial(addr string, options ...DialOption) (conn net.Con
 		if timeout <= 0 {
 			timeout = DialTimeout
 		}
-		conn, err = net.DialTimeout("udp", addr, timeout)
+		conn, err = utils.DialTimeout("udp", addr, timeout)
 		if err != nil {
 			return
 		}

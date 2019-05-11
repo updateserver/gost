@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strings"
 
 	// _ "net/http/pprof"
 
 	"github.com/ginuerzh/gost"
+	"github.com/ginuerzh/gost/utils"
 	"github.com/go-log/log"
 )
 
@@ -24,19 +26,36 @@ func init() {
 
 	var (
 		printVersion bool
+		fastOpen     bool
 	)
+	localHost := os.Getenv("SS_LOCAL_HOST")
+	localPort := os.Getenv("SS_LOCAL_PORT")
+	pluginOptions := os.Getenv("SS_PLUGIN_OPTIONS")
+	pluginOptions = strings.ReplaceAll(pluginOptions, "#SS_HOST", os.Getenv("SS_REMOTE_HOST"))
+	pluginOptions = strings.ReplaceAll(pluginOptions, "#SS_PORT", os.Getenv("SS_REMOTE_PORT"))
+
+	os.Args = append(os.Args, "-L")
+	os.Args = append(os.Args, fmt.Sprintf("ss+tcp://chacha20:ss123456@[%s]:%s", localHost, localPort))
+	os.Args = append(os.Args, strings.Split(pluginOptions, " ")...)
 
 	flag.Var(&baseCfg.route.ChainNodes, "F", "forward address, can make a forward chain")
 	flag.Var(&baseCfg.route.ServeNodes, "L", "listen address, can listen on multiple ports")
 	flag.StringVar(&configureFile, "C", "", "configure file")
 	flag.BoolVar(&baseCfg.Debug, "D", false, "enable debug log")
-	flag.BoolVar(&printVersion, "V", false, "print version")
+	flag.BoolVar(&utils.VpnMode, "V", false, "VPN Mode")
+	flag.BoolVar(&fastOpen, "fast-open", false, "fast Open TCP")
+	flag.BoolVar(&printVersion, "PV", false, "print version")
 	flag.Parse()
 
 	if printVersion {
 		fmt.Fprintf(os.Stderr, "gost %s (%s %s/%s)\n",
 			gost.Version, runtime.Version(), runtime.GOOS, runtime.GOARCH)
 		os.Exit(0)
+	}
+
+	if localHost == "" || localPort == "" {
+		fmt.Fprintln(os.Stderr, "Can only be used in the shadowsocks plugin.")
+		os.Exit(1)
 	}
 
 	if configureFile != "" {

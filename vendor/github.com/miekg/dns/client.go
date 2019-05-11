@@ -11,6 +11,8 @@ import (
 	"net"
 	"strings"
 	"time"
+
+	"github.com/ginuerzh/gost/utils"
 )
 
 const (
@@ -401,7 +403,7 @@ func (c *Client) getTimeoutForRequest(timeout time.Duration) time.Duration {
 // Dial connects to the address on the named network.
 func Dial(network, address string) (conn *Conn, err error) {
 	conn = new(Conn)
-	conn.Conn, err = net.Dial(network, address)
+	conn.Conn, err = utils.Dial(network, address)
 	if err != nil {
 		return nil, err
 	}

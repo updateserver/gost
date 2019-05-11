@@ -16,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/ginuerzh/gost/utils"
 )
 
 type proxy_direct struct{}
@@ -24,7 +26,7 @@ type proxy_direct struct{}
 var proxy_Direct = proxy_direct{}
 
 func (proxy_direct) Dial(network, addr string) (net.Conn, error) {
-	return net.Dial(network, addr)
+	return utils.Dial(network, addr)
 }
 
 // A PerHost directs connections to a default Dialer unless the host name

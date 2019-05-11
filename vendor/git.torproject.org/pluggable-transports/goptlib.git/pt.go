@@ -150,6 +150,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ginuerzh/gost/utils"
 )
 
 // This type wraps a Write method and calls Sync after each Write.
@@ -925,10 +927,10 @@ func extOrPortSetup(s io.ReadWriter, addr, methodName string) error {
 // sent.
 func DialOr(info *ServerInfo, addr, methodName string) (*net.TCPConn, error) {
 	if info.ExtendedOrAddr == nil || info.AuthCookiePath == "" {
-		return net.DialTCP("tcp", nil, info.OrAddr)
+		return utils.DialTCP("tcp", nil, info.OrAddr)
 	}
 
-	s, err := net.DialTCP("tcp", nil, info.ExtendedOrAddr)
+	s, err := utils.DialTCP("tcp", nil, info.ExtendedOrAddr)
 	if err != nil {
 		return nil, err
 	}

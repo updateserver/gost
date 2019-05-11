@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ginuerzh/gost/utils"
 	"github.com/go-log/log"
 	"golang.org/x/net/http2"
 )
@@ -475,7 +476,7 @@ func (h *http2Handler) authenticate(w http.ResponseWriter, r *http.Request, resp
 				resp = r
 			}
 		case "host":
-			cc, err := net.Dial("tcp", ss[1])
+			cc, err := utils.Dial("tcp", ss[1])
 			if err == nil {
 				defer cc.Close()
 				log.Logf("[http2] %s <-> %s : forward to %s", r.RemoteAddr, laddr, ss[1])
