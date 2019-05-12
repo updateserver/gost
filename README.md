@@ -1,6 +1,8 @@
 gost - GO Simple Tunnel
 ======
 
+*本分支为Shadowsocks插件的适配分支，原版gost请切master分支或者查看upstream仓库*
+
 ### GO语言实现的安全隧道
 
 [![GoDoc](https://godoc.org/github.com/ginuerzh/gost?status.svg)](https://godoc.org/github.com/ginuerzh/gost)
