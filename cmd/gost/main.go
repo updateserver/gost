@@ -5,11 +5,12 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"runtime"
 	"strings"
 
-	// _ "net/http/pprof"
+	_ "net/http/pprof"
 
 	"github.com/ginuerzh/gost"
 	"github.com/ginuerzh/gost/utils"
@@ -72,9 +73,11 @@ func init() {
 }
 
 func main() {
-	// go func() {
-	// 	log.Log(http.ListenAndServe("localhost:6060", nil))
-	// }()
+	if os.Getenv("PROFILING") != "" {
+		go func() {
+			log.Log(http.ListenAndServe("127.0.0.1:16060", nil))
+		}()
+	}
 
 	// NOTE: as of 2.6, you can use custom cert/key files to initialize the default certificate.
 	tlsConfig, err := tlsConfig(defaultCertFile, defaultKeyFile)

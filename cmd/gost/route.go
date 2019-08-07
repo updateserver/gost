@@ -52,10 +52,13 @@ func (r *route) parseChain() (*gost.Chain, error) {
 		ngroup.AddNode(nodes...)
 
 		ngroup.SetSelector(nil,
-			gost.WithFilter(&gost.FailFilter{
-				MaxFails:    defaultMaxFails,
-				FailTimeout: defaultFailTimeout,
-			}),
+			gost.WithFilter(
+				&gost.FailFilter{
+					MaxFails:    nodes[0].GetInt("max_fails"),
+					FailTimeout: nodes[0].GetDuration("fail_timeout"),
+				},
+				&gost.InvalidFilter{},
+			),
 			gost.WithStrategy(gost.NewStrategy(nodes[0].Get("strategy"))),
 		)
 
@@ -184,6 +187,8 @@ func parseChainNode(ns string) (nodes []gost.Node, err error) {
 		connector = gost.SOCKS4AConnector()
 	case "ss":
 		connector = gost.ShadowConnector(node.User)
+	case "ss2":
+		connector = gost.Shadow2Connector(node.User)
 	case "direct":
 		connector = gost.SSHDirectForwardConnector()
 	case "remote":
@@ -203,6 +208,10 @@ func parseChainNode(ns string) (nodes []gost.Node, err error) {
 	node.DialOptions = append(node.DialOptions,
 		gost.TimeoutDialOption(time.Duration(timeout)*time.Second),
 	)
+
+	node.ConnectOptions = []gost.ConnectOption{
+		gost.UserAgentConnectOption(node.Get("agent")),
+	}
 
 	if host == "" {
 		host = node.Host
@@ -375,6 +384,8 @@ func (r *route) GenRouters() ([]router, error) {
 			handler = gost.SOCKS4Handler()
 		case "ss":
 			handler = gost.ShadowHandler()
+		case "ss2":
+			handler = gost.Shadow2Handler()
 		case "http":
 			handler = gost.HTTPHandler()
 		case "tcp":
@@ -417,9 +428,9 @@ func (r *route) GenRouters() ([]router, error) {
 		node.Bypass = parseBypass(node.Get("bypass"))
 		resolver := parseResolver(node.Get("dns"))
 		hosts := parseHosts(node.Get("hosts"))
+		ips := parseIP(node.Get("ip"), "")
 
 		handler.Init(
-			// gost.AddrHandlerOption(node.Addr),
 			gost.AddrHandlerOption(ln.Addr().String()),
 			gost.ChainHandlerOption(chain),
 			gost.UsersHandlerOption(node.User),
@@ -428,13 +439,17 @@ func (r *route) GenRouters() ([]router, error) {
 			gost.WhitelistHandlerOption(whitelist),
 			gost.BlacklistHandlerOption(blacklist),
 			gost.StrategyHandlerOption(gost.NewStrategy(node.Get("strategy"))),
+			gost.MaxFailsHandlerOption(node.GetInt("max_fails")),
+			gost.FailTimeoutHandlerOption(node.GetDuration("fail_timeout")),
 			gost.BypassHandlerOption(node.Bypass),
 			gost.ResolverHandlerOption(resolver),
 			gost.HostsHandlerOption(hosts),
 			gost.RetryHandlerOption(node.GetInt("retry")), // override the global retry option.
 			gost.TimeoutHandlerOption(time.Duration(node.GetInt("timeout"))*time.Second),
 			gost.ProbeResistHandlerOption(node.Get("probe_resist")),
+			gost.KnockingHandlerOption(node.Get("knock")),
 			gost.NodeHandlerOption(node),
+			gost.IPsHandlerOption(ips),
 		)
 
 		rt := router{

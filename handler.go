@@ -28,14 +28,18 @@ type HandlerOptions struct {
 	Whitelist     *Permissions
 	Blacklist     *Permissions
 	Strategy      Strategy
+	MaxFails      int
+	FailTimeout   time.Duration
 	Bypass        *Bypass
 	Retries       int
 	Timeout       time.Duration
 	Resolver      Resolver
 	Hosts         *Hosts
 	ProbeResist   string
+	KnockingHost  string
 	Node          Node
 	Host          string
+	IPs           []string
 }
 
 // HandlerOption allows a common way to set handler options.
@@ -114,6 +118,20 @@ func StrategyHandlerOption(strategy Strategy) HandlerOption {
 	}
 }
 
+// MaxFailsHandlerOption sets the max_fails option of HandlerOptions.
+func MaxFailsHandlerOption(n int) HandlerOption {
+	return func(opts *HandlerOptions) {
+		opts.MaxFails = n
+	}
+}
+
+// FailTimeoutHandlerOption sets the fail_timeout option of HandlerOptions.
+func FailTimeoutHandlerOption(d time.Duration) HandlerOption {
+	return func(opts *HandlerOptions) {
+		opts.FailTimeout = d
+	}
+}
+
 // RetryHandlerOption sets the retry option of HandlerOptions.
 func RetryHandlerOption(retries int) HandlerOption {
 	return func(opts *HandlerOptions) {
@@ -149,6 +167,13 @@ func ProbeResistHandlerOption(pr string) HandlerOption {
 	}
 }
 
+// KnockingHandlerOption adds the knocking host for probe resistance.
+func KnockingHandlerOption(host string) HandlerOption {
+	return func(opts *HandlerOptions) {
+		opts.KnockingHost = host
+	}
+}
+
 // NodeHandlerOption set the server node for server handler.
 func NodeHandlerOption(node Node) HandlerOption {
 	return func(opts *HandlerOptions) {
@@ -160,6 +185,13 @@ func NodeHandlerOption(node Node) HandlerOption {
 func HostHandlerOption(host string) HandlerOption {
 	return func(opts *HandlerOptions) {
 		opts.Host = host
+	}
+}
+
+// IPsHandlerOption sets the ip list for port forward.
+func IPsHandlerOption(ips []string) HandlerOption {
+	return func(opts *HandlerOptions) {
+		opts.IPs = ips
 	}
 }
 

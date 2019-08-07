@@ -39,6 +39,10 @@ func (c *http2Connector) Connect(conn net.Conn, addr string, options ...ConnectO
 	for _, option := range options {
 		option(opts)
 	}
+	ua := opts.UserAgent
+	if ua == "" {
+		ua = DefaultUserAgent
+	}
 
 	cc, ok := conn.(*http2ClientConn)
 	if !ok {
@@ -54,11 +58,10 @@ func (c *http2Connector) Connect(conn net.Conn, addr string, options ...ConnectO
 		ProtoMajor:    2,
 		ProtoMinor:    0,
 		Body:          pr,
-		Host:          cc.addr,
+		Host:          addr,
 		ContentLength: -1,
 	}
-	// TODO: use the standard CONNECT method.
-	req.Header.Set("Gost-Target", addr)
+	req.Header.Set("User-Agent", ua)
 
 	user := opts.User
 	if user == nil {
@@ -133,7 +136,6 @@ func (tr *http2Transporter) Dial(addr string, options ...DialOption) (net.Conn, 
 		// So we should try to connect the server.
 		conn, err := opts.Chain.Dial(addr)
 		if err != nil {
-
 			return nil, err
 		}
 		conn.Close()
@@ -462,8 +464,12 @@ func (h *http2Handler) authenticate(w http.ResponseWriter, r *http.Request, resp
 		return true
 	}
 
-	// probing resistance is enabled
-	if ss := strings.SplitN(h.options.ProbeResist, ":", 2); len(ss) == 2 {
+	// probing resistance is enabled, and knocking host is mismatch.
+	if ss := strings.SplitN(h.options.ProbeResist, ":", 2); len(ss) == 2 &&
+		(h.options.KnockingHost == "" || !strings.EqualFold(r.URL.Hostname(), h.options.KnockingHost)) {
+		resp.StatusCode = http.StatusServiceUnavailable // default status code
+		w.Header().Del("Proxy-Agent")
+
 		switch ss[0] {
 		case "code":
 			resp.StatusCode, _ = strconv.Atoi(ss[1])
@@ -503,7 +509,6 @@ func (h *http2Handler) authenticate(w http.ResponseWriter, r *http.Request, resp
 		resp.StatusCode = http.StatusProxyAuthRequired
 		resp.Header.Add("Proxy-Authenticate", "Basic realm=\"gost\"")
 	} else {
-		w.Header().Del("Proxy-Agent")
 		resp.Header = http.Header{}
 		resp.Header.Set("Server", "nginx/1.14.1")
 		resp.Header.Set("Date", time.Now().Format(http.TimeFormat))

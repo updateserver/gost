@@ -38,6 +38,10 @@ func (c *httpConnector) Connect(conn net.Conn, addr string, options ...ConnectOp
 	if timeout <= 0 {
 		timeout = ConnectTimeout
 	}
+	ua := opts.UserAgent
+	if ua == "" {
+		ua = DefaultUserAgent
+	}
 
 	conn.SetDeadline(time.Now().Add(timeout))
 	defer conn.SetDeadline(time.Time{})
@@ -50,7 +54,7 @@ func (c *httpConnector) Connect(conn net.Conn, addr string, options ...ConnectOp
 		ProtoMinor: 1,
 		Header:     make(http.Header),
 	}
-	req.Header.Set("User-Agent", DefaultUserAgent)
+	req.Header.Set("User-Agent", ua)
 	req.Header.Set("Proxy-Connection", "keep-alive")
 
 	user := opts.User
@@ -129,14 +133,14 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 		return
 	}
 
-	host := req.Host
 	// try to get the actual host.
 	if v := req.Header.Get("Gost-Target"); v != "" {
 		if h, err := decodeServerName(v); err == nil {
-			host = h
+			req.Host = h
 		}
 	}
 
+	host := req.Host
 	if _, port, _ := net.SplitHostPort(host); port == "" {
 		host = net.JoinHostPort(host, "80")
 	}
@@ -153,7 +157,6 @@ func (h *httpHandler) handleRequest(conn net.Conn, req *http.Request) {
 		log.Logf("[http] %s -> %s\n%s", conn.RemoteAddr(), conn.LocalAddr(), string(dump))
 	}
 
-	req.Host = host
 	req.Header.Del("Gost-Target")
 
 	resp := &http.Response{
@@ -304,8 +307,11 @@ func (h *httpHandler) authenticate(conn net.Conn, req *http.Request, resp *http.
 		return true
 	}
 
-	// probing resistance is enabled
-	if ss := strings.SplitN(h.options.ProbeResist, ":", 2); len(ss) == 2 {
+	// probing resistance is enabled, and knocking host is mismatch.
+	if ss := strings.SplitN(h.options.ProbeResist, ":", 2); len(ss) == 2 &&
+		(h.options.KnockingHost == "" || !strings.EqualFold(req.URL.Hostname(), h.options.KnockingHost)) {
+		resp.StatusCode = http.StatusServiceUnavailable // default status code
+
 		switch ss[0] {
 		case "code":
 			resp.StatusCode, _ = strconv.Atoi(ss[1])

@@ -3,6 +3,8 @@ package gost
 import (
 	"errors"
 	"math/rand"
+	"net"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -160,6 +162,12 @@ type Filter interface {
 	String() string
 }
 
+// default options for FailFilter
+const (
+	DefaultMaxFails    = 1
+	DefaultFailTimeout = 30 * time.Second
+)
+
 // FailFilter filters the dead node.
 // A node is marked as dead if its failed count is greater than MaxFails.
 type FailFilter struct {
@@ -167,20 +175,26 @@ type FailFilter struct {
 	FailTimeout time.Duration
 }
 
-// Filter filters nodes.
+// Filter filters dead nodes.
 func (f *FailFilter) Filter(nodes []Node) []Node {
-	if len(nodes) <= 1 || f.MaxFails <= 0 {
+	maxFails := f.MaxFails
+	if maxFails == 0 {
+		maxFails = DefaultMaxFails
+	}
+	failTimeout := f.FailTimeout
+	if failTimeout == 0 {
+		failTimeout = DefaultFailTimeout
+	}
+
+	if len(nodes) <= 1 || maxFails < 0 {
 		return nodes
 	}
 	nl := []Node{}
 	for i := range nodes {
-		marker := &failMarker{}
-		if nil != nodes[i].marker {
-			marker = nodes[i].marker.Clone()
-		}
-		// log.Logf("%s: %d/%d %v/%v", nodes[i], marker.failCount, f.MaxFails, marker.failTime, f.FailTimeout)
-		if marker.failCount < uint32(f.MaxFails) ||
-			time.Since(time.Unix(marker.failTime, 0)) >= f.FailTimeout {
+		marker := nodes[i].marker.Clone()
+		// log.Logf("%s: %d/%d %v/%v", nodes[i], marker.FailCount(), f.MaxFails, marker.FailTime(), f.FailTimeout)
+		if marker.FailCount() < uint32(maxFails) ||
+			time.Since(time.Unix(marker.FailTime(), 0)) >= failTimeout {
 			nl = append(nl, nodes[i])
 		}
 	}
@@ -191,13 +205,59 @@ func (f *FailFilter) String() string {
 	return "fail"
 }
 
+// InvalidFilter filters the invalid node.
+// A node is invalid if its port is invalid (negative or zero value).
+type InvalidFilter struct{}
+
+// Filter filters invalid nodes.
+func (f *InvalidFilter) Filter(nodes []Node) []Node {
+	nl := []Node{}
+	for i := range nodes {
+		_, sport, _ := net.SplitHostPort(nodes[i].Addr)
+		if port, _ := strconv.Atoi(sport); port > 0 {
+			nl = append(nl, nodes[i])
+		}
+	}
+	return nl
+}
+
+func (f *InvalidFilter) String() string {
+	return "invalid"
+}
+
 type failMarker struct {
 	failTime  int64
 	failCount uint32
 	mux       sync.RWMutex
 }
 
+func (m *failMarker) FailTime() int64 {
+	if m == nil {
+		return 0
+	}
+
+	m.mux.Lock()
+	defer m.mux.Unlock()
+
+	return m.failTime
+}
+
+func (m *failMarker) FailCount() uint32 {
+	if m == nil {
+		return 0
+	}
+
+	m.mux.Lock()
+	defer m.mux.Unlock()
+
+	return m.failCount
+}
+
 func (m *failMarker) Mark() {
+	if m == nil {
+		return
+	}
+
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
@@ -206,6 +266,10 @@ func (m *failMarker) Mark() {
 }
 
 func (m *failMarker) Reset() {
+	if m == nil {
+		return
+	}
+
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
@@ -214,6 +278,10 @@ func (m *failMarker) Reset() {
 }
 
 func (m *failMarker) Clone() *failMarker {
+	if m == nil {
+		return nil
+	}
+
 	m.mux.RLock()
 	defer m.mux.RUnlock()
 

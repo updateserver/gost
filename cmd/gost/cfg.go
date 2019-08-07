@@ -45,12 +45,10 @@ var (
 
 // Load the certificate from cert and key files, will use the default certificate if the provided info are invalid.
 func tlsConfig(certFile, keyFile string) (*tls.Config, error) {
-	if certFile == "" {
-		certFile = defaultCertFile
+	if certFile == "" || keyFile == "" {
+		certFile, keyFile = defaultCertFile, defaultKeyFile
 	}
-	if keyFile == "" {
-		keyFile = defaultKeyFile
-	}
+
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, err
@@ -150,6 +148,7 @@ func parseIP(s string, port string) (ips []string) {
 		for _, s := range ss {
 			s = strings.TrimSpace(s)
 			if s != "" {
+				// TODO: support IPv6
 				if !strings.Contains(s, ":") {
 					s = s + ":" + port
 				}

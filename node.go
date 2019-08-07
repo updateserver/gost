@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 var (
@@ -27,6 +28,7 @@ type Node struct {
 	Values           url.Values
 	DialOptions      []DialOption
 	HandshakeOptions []HandshakeOption
+	ConnectOptions   []ConnectOption
 	Client           *Client
 	marker           *failMarker
 	Bypass           *Bypass
@@ -85,7 +87,7 @@ func ParseNode(s string) (node Node, err error) {
 	}
 
 	switch node.Protocol {
-	case "http", "http2", "socks4", "socks4a", "ss", "ssu", "sni":
+	case "http", "http2", "socks4", "socks4a", "ss", "ss2", "ssu", "sni":
 	case "socks", "socks5":
 		node.Protocol = "socks5"
 	case "tcp", "udp", "rtcp", "rudp": // port forwarding
@@ -128,24 +130,34 @@ func (node *Node) Get(key string) string {
 	return node.Values.Get(key)
 }
 
-// GetBool likes Get, but convert parameter value to bool.
+// GetBool converts node parameter value to bool.
 func (node *Node) GetBool(key string) bool {
 	b, _ := strconv.ParseBool(node.Values.Get(key))
 	return b
 }
 
-// GetInt likes Get, but convert parameter value to int.
+// GetInt converts node parameter value to int.
 func (node *Node) GetInt(key string) int {
 	n, _ := strconv.Atoi(node.Values.Get(key))
 	return n
 }
 
+// GetDuration converts node parameter value to time.Duration.
+func (node *Node) GetDuration(key string) time.Duration {
+	d, _ := time.ParseDuration(node.Values.Get(key))
+	return d
+}
+
 func (node Node) String() string {
-	if node.url == nil {
-		return fmt.Sprintf("%s+%s://%s",
-			node.Protocol, node.Transport, node.Addr)
+	var scheme string
+	if node.url != nil {
+		scheme = node.url.Scheme
 	}
-	return node.url.String()
+	if scheme == "" {
+		scheme = fmt.Sprintf("%s+%s", node.Protocol, node.Transport)
+	}
+	return fmt.Sprintf("%s://%s",
+		scheme, node.Addr)
 }
 
 // NodeGroup is a group of nodes.
