@@ -36,7 +36,7 @@ func init() {
 	pluginOptions = strings.ReplaceAll(pluginOptions, "#SS_PORT", os.Getenv("SS_REMOTE_PORT"))
 
 	os.Args = append(os.Args, "-L")
-	os.Args = append(os.Args, fmt.Sprintf("ss+tcp://chacha20:ss123456@[%s]:%s", localHost, localPort))
+	os.Args = append(os.Args, fmt.Sprintf("ss+tcp://rc4-md5:gost@[%s]:%s", localHost, localPort))
 	os.Args = append(os.Args, strings.Split(pluginOptions, " ")...)
 
 	flag.Var(&baseCfg.route.ChainNodes, "F", "forward address, can make a forward chain")
