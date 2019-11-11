@@ -141,8 +141,8 @@ func DialContext(ctx context.Context, network, address string) (net.Conn, error)
 
 func init() {
 	net.DefaultResolver = &net.Resolver{Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-		log.Printf("DefaultResolver address %v modify to %v", address, "114.114.114.114:53")
-		return DialContext(ctx, network, "114.114.114.114:53")
+		log.Printf("DefaultResolver address %v modify to %v", address, "119.29.29.29:53")
+		return DialContext(ctx, network, "119.29.29.29:53")
 	}, PreferGo: true}
 }
 
