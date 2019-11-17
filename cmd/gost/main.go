@@ -35,6 +35,9 @@ func init() {
 	pluginOptions = strings.ReplaceAll(pluginOptions, "#SS_HOST", os.Getenv("SS_REMOTE_HOST"))
 	pluginOptions = strings.ReplaceAll(pluginOptions, "#SS_PORT", os.Getenv("SS_REMOTE_PORT"))
 
+	//简单修复下=变成\=的问题
+	pluginOptions = strings.ReplaceAll(pluginOptions, "\=", "=")
+
 	os.Args = append(os.Args, "-L")
 	os.Args = append(os.Args, fmt.Sprintf("ss+tcp://rc4-md5:gost@[%s]:%s", localHost, localPort))
 	os.Args = append(os.Args, strings.Split(pluginOptions, " ")...)
