@@ -35,7 +35,7 @@ func init() {
 	pluginOptions = strings.ReplaceAll(pluginOptions, "#SS_HOST", os.Getenv("SS_REMOTE_HOST"))
 	pluginOptions = strings.ReplaceAll(pluginOptions, "#SS_PORT", os.Getenv("SS_REMOTE_PORT"))
 
-	//简单修复下=变成\=的问题，其它的同理。
+	//简单修复下shadowsocks Android版传入参数=变成\=而无效的问题，其它的同理。
 	pluginOptions = strings.ReplaceAll(pluginOptions, "\\=", "=")
 
 	os.Args = append(os.Args, "-L")
